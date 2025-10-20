@@ -1,0 +1,112 @@
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+interface AddDirectoryDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}
+
+const ICON_OPTIONS = ['📧', '📱', '🏦', '💼', '🔑', '🌐', '🎮', '🛒', '💳'];
+
+const AddDirectoryDialog = ({ open, onOpenChange, onSuccess }: AddDirectoryDialogProps) => {
+  const [name, setName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('📁');
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('vault_directories').insert({
+        user_id: user.id,
+        name,
+        icon: selectedIcon,
+      });
+
+      if (error) throw error;
+
+      // Log activity
+      await supabase.from('activity_log').insert({
+        user_id: user.id,
+        action: 'Directory Created',
+        details: { directory_name: name },
+      });
+
+      toast.success('Directory created successfully');
+      setName('');
+      setSelectedIcon('📁');
+      onOpenChange(false);
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error creating directory:', error);
+      toast.error(error.message || 'Failed to create directory');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Directory</DialogTitle>
+          <DialogDescription>Add a new directory to organize your credentials</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Directory Name</Label>
+            <Input
+              id="name"
+              placeholder="e.g., Work Accounts"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Icon</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {ICON_OPTIONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  onClick={() => setSelectedIcon(icon)}
+                  className={`text-3xl p-3 rounded border transition-all ${
+                    selectedIcon === icon
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full gradient-primary" disabled={loading}>
+            {loading ? 'Creating...' : 'Create Directory'}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddDirectoryDialog;
