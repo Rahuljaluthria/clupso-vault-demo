@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { encryptPassword } from '@/lib/encryption';
@@ -42,26 +41,34 @@ const AddCredentialDialog = ({
 
     setLoading(true);
     try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        toast.error('Please log in again');
+        return;
+      }
+
       const encryptedPwd = encryptPassword(password);
 
-      const { error } = await supabase.from('credentials').insert({
-        user_id: user.id,
-        directory_id: directoryId,
-        name,
-        username,
-        encrypted_password: encryptedPwd,
-        url: url || null,
-        notes: notes || null,
+      const response = await fetch('https://clupso-backend.onrender.com/api/vault/credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          directoryId,
+          title: name,
+          username,
+          password: encryptedPwd,
+          url: url || '',
+          notes: notes || ''
+        })
       });
 
-      if (error) throw error;
-
-      // Log activity
-      await supabase.from('activity_log').insert({
-        user_id: user.id,
-        action: 'Credential Added',
-        details: { credential_name: name },
-      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create credential');
+      }
 
       toast.success('Credential added successfully');
       resetForm();

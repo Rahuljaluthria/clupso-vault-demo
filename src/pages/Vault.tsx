@@ -5,7 +5,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import DirectoryCard from '@/components/vault/DirectoryCard';
 import CredentialCard from '@/components/vault/CredentialCard';
@@ -334,3 +333,4 @@ const Vault = () => {
 };
 
 export default Vault;
+

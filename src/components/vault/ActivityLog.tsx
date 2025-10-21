@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/lib/mongodb-client';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
