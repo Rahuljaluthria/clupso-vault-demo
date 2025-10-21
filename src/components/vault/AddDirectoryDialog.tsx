@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { mongoClient } from '@/lib/mongodb-client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -33,20 +33,29 @@ const AddDirectoryDialog = ({ open, onOpenChange, onSuccess }: AddDirectoryDialo
 
     setLoading(true);
     try {
-      const { error } = await supabase.from('vault_directories').insert({
-        user_id: user.id,
-        name,
-        icon: selectedIcon,
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        toast.error('Please log in again');
+        return;
+      }
+
+      const response = await fetch('https://clupso-backend.onrender.com/api/vault/directories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name,
+          icon: selectedIcon,
+          description: ''
+        })
       });
 
-      if (error) throw error;
-
-      // Log activity
-      await supabase.from('activity_log').insert({
-        user_id: user.id,
-        action: 'Directory Created',
-        details: { directory_name: name },
-      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create directory');
+      }
 
       toast.success('Directory created successfully');
       setName('');
