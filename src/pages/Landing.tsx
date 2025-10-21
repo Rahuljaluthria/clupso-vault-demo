@@ -3,22 +3,26 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock, KeyRound, Activity } from 'lucide-react';
 import heroImage from '@/assets/hero-security.jpg';
+import LiquidEther from '@/components/LiquidEther';
 
 const Landing = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/90 to-background"></div>
+        {/* LiquidEther Background */}
+        <div className="absolute inset-0 z-0">
+          <LiquidEther 
+            colors={['#5227FF', '#FF9FFC', '#B19EEF']}
+            className="w-full h-full"
+            style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
+            autoDemo={true}
+            autoSpeed={0.3}
+            autoIntensity={1.5}
+            mouseForce={30}
+            cursorSize={150}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/70 to-background/90 pointer-events-none"></div>
         </div>
 
         {/* Content */}

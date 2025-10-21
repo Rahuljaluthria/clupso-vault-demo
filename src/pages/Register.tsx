@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
+import LiquidEther from '@/components/LiquidEther';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -33,20 +34,35 @@ const Register = () => {
     setLoading(true);
     try {
       await signUp(email, password, phoneNumber);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create account');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      {/* LiquidEther Background */}
+      <div className="absolute inset-0 z-0">
+        <LiquidEther 
+          colors={['#5227FF', '#FF9FFC', '#B19EEF']}
+          className="w-full h-full"
+          style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
+          autoDemo={true}
+          autoSpeed={0.4}
+          autoIntensity={1.8}
+          mouseForce={25}
+          cursorSize={120}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background/90 pointer-events-none"></div>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
           <Link to="/">

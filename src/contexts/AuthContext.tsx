@@ -1,29 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState, ReactNode } from 'react';
+import { User, Session, supabase } from '@/lib/mongodb-client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signUp: (email: string, password: string, phoneNumber: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  otpVerified: boolean;
-  setOtpVerified: (verified: boolean) => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
+import { AuthContext } from './AuthContextTypes';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -33,61 +12,64 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+          setOtpVerified(true);
+        }
+      } catch (error) {
+        console.log('Not authenticated');
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
   const signUp = async (email: string, password: string, phoneNumber: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           phone_number: phoneNumber,
         },
       },
     });
 
-    if (error) throw error;
+    if (error) throw new Error(error);
     
     toast.success('Account created successfully!');
     navigate('/login');
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signIn({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) throw new Error(error);
     
-    // Navigate to OTP verification
-    navigate('/otp-verify');
+    // Set the user and session
+    if (data) {
+      setUser(data.user);
+      setSession({ user: data.user, access_token: data.token });
+      setOtpVerified(true);
+      toast.success('Signed in successfully!');
+      navigate('/vault');
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
     setOtpVerified(false);
     toast.success('Signed out successfully');
     navigate('/');

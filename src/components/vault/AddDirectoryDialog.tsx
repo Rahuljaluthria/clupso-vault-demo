@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 interface AddDirectoryDialogProps {
@@ -53,9 +53,9 @@ const AddDirectoryDialog = ({ open, onOpenChange, onSuccess }: AddDirectoryDialo
       setSelectedIcon('📁');
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating directory:', error);
-      toast.error(error.message || 'Failed to create directory');
+      toast.error(error instanceof Error ? error.message : 'Failed to create directory');
     } finally {
       setLoading(false);
     }

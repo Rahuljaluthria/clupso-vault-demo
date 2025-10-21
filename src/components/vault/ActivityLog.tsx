@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/mongodb-client';
+import { useAuth } from '@/hooks/useAuth';
 import { Activity, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ActivityEntry {
   id: string;
   action: string;
-  details: any;
+  details: {
+    email?: string;
+    directory_name?: string;
+    credential_name?: string;
+    [key: string]: string | number | boolean | undefined;
+  };
   created_at: string;
 }
 
@@ -18,31 +23,37 @@ const ActivityLog = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadActivities();
-  }, [user]);
-
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('activity_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      if (data) {
-        setActivities(data);
-      }
+      // For now, use mock data until backend API is ready
+      const mockActivities = [
+        {
+          id: '1',
+          action: 'User signed in',
+          created_at: new Date().toISOString(),
+          details: { email: user.email }
+        },
+        {
+          id: '2', 
+          action: 'Vault accessed',
+          created_at: new Date(Date.now() - 60000).toISOString(),
+          details: {}
+        }
+      ];
+      
+      setActivities(mockActivities);
     } catch (error) {
       console.error('Error loading activities:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadActivities();
+  }, [loadActivities]);
 
   if (loading) {
     return (

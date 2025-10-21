@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, Plus } from 'lucide-react';
@@ -42,15 +42,6 @@ const Vault = () => {
   const [showAddDirectory, setShowAddDirectory] = useState(false);
   const [showAddCredential, setShowAddCredential] = useState(false);
 
-  useEffect(() => {
-    if (!user || !otpVerified) {
-      navigate('/login');
-      return;
-    }
-
-    loadVaultData();
-  }, [user, otpVerified, navigate]);
-
   const loadVaultData = async () => {
     try {
       // Load directories
@@ -80,13 +71,23 @@ const Vault = () => {
       if (credData) {
         setCredentials(credData);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error loading vault:', error);
       toast.error('Failed to load vault data');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user || !otpVerified) {
+      navigate('/login');
+      return;
+    }
+
+    loadVaultData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, otpVerified, navigate]);
 
   const createSampleDirectories = async () => {
     if (!user) return;
@@ -127,7 +128,7 @@ const Vault = () => {
           }))
         );
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating sample directories:', error);
     }
   };
@@ -186,7 +187,7 @@ const Vault = () => {
           }))
         );
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating sample credentials:', error);
     }
   };

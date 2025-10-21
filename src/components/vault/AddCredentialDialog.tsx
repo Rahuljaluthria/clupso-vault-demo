@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { encryptPassword } from '@/lib/encryption';
 
@@ -67,9 +67,9 @@ const AddCredentialDialog = ({
       resetForm();
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating credential:', error);
-      toast.error(error.message || 'Failed to create credential');
+      toast.error(error instanceof Error ? error.message : 'Failed to create credential');
     } finally {
       setLoading(false);
     }
