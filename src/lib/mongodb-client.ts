@@ -28,6 +28,7 @@ export interface User {
   email: string;
   phone_number?: string;
   email_verified: boolean;
+  totpEnabled?: boolean;
 }
 
 export interface Session {

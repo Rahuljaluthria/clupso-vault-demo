@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import OTPVerify from "./pages/OTPVerify";
+import TotpSetup from "./pages/TotpSetup";
 import Vault from "./pages/Vault";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/otp-verify" element={<OTPVerify />} />
+            <Route path="/totp-setup" element={<TotpSetup />} />
             <Route path="/vault" element={<Vault />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

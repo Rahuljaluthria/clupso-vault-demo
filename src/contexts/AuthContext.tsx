@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AuthContext } from './AuthContextTypes';
 
+const API_URL = 'https://clupso-backend.onrender.com/api';
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [otpVerified, setOtpVerified] = useState(false);
   const navigate = useNavigate();
@@ -15,11 +18,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check if user is already logged in
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user);
-          setOtpVerified(true);
+        const storedToken = localStorage.getItem('auth_token');
+        if (storedToken) {
+          setToken(storedToken);
+          // Fetch user data
+          const response = await fetch(`${API_URL}/auth/user`, {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`
+            }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              phone_number: userData.phoneNumber,
+              email_verified: true,
+              totpEnabled: userData.totpEnabled
+            });
+            setSession({ access_token: storedToken, user: userData });
+            setOtpVerified(true);
+          } else {
+            // Token invalid, clear it
+            localStorage.removeItem('auth_token');
+            setToken(null);
+          }
         }
       } catch (error) {
         console.log('Not authenticated');
@@ -30,6 +54,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     checkAuth();
   }, []);
+
+  const refreshUser = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/auth/user`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          phone_number: userData.phoneNumber,
+          email_verified: true,
+          totpEnabled: userData.totpEnabled
+        });
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
 
   const signUp = async (email: string, password: string, phoneNumber: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -48,22 +97,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/login');
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signIn({
-      email,
-      password,
+  const signIn = async (email: string, password: string, totpCode?: string) => {
+    const response = await fetch(`${API_URL}/auth/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password, totpCode })
     });
 
-    if (error) throw new Error(error);
-    
-    // Set the user and session
-    if (data) {
-      setUser(data.user);
-      setSession({ user: data.user, access_token: data.token });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Sign in failed');
+    }
+
+    // Check if TOTP is required
+    if (data.requireTotp) {
+      return { requireTotp: true };
+    }
+
+    // Successful login
+    if (data.token) {
+      localStorage.setItem('auth_token', data.token);
+      setToken(data.token);
+      setUser({
+        id: data.user.id,
+        email: data.user.email,
+        phone_number: data.user.phoneNumber,
+        email_verified: true,
+        totpEnabled: data.user.totpEnabled
+      });
+      setSession({ access_token: data.token, user: data.user });
       setOtpVerified(true);
       toast.success('Signed in successfully!');
-      navigate('/vault');
+      
+      // If TOTP is not enabled, redirect to setup
+      if (!data.user.totpEnabled) {
+        navigate('/totp-setup');
+      } else {
+        navigate('/vault');
+      }
     }
+
+    return { requireTotp: false };
   };
 
   const signOut = async () => {
@@ -80,10 +157,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         session,
+        token,
         loading,
         signUp,
         signIn,
         signOut,
+        refreshUser,
         otpVerified,
         setOtpVerified,
       }}

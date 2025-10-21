@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Lock } from 'lucide-react';
+import { Lock, Shield } from 'lucide-react';
 import LiquidEther from '@/components/LiquidEther';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [requiresTotp, setRequiresTotp] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
 
@@ -21,9 +23,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      const result = await signIn(email, password, requiresTotp ? totpCode : undefined);
+      
+      if (result.requireTotp) {
+        setRequiresTotp(true);
+        toast.info('Please enter your Google Authenticator code');
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to sign in');
+      setRequiresTotp(false);
+      setTotpCode('');
     } finally {
       setLoading(false);
     }
@@ -63,55 +72,97 @@ const Login = () => {
           <CardHeader>
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-primary/10">
-                <Lock className="w-8 h-8 text-primary" />
+                {requiresTotp ? (
+                  <Shield className="w-8 h-8 text-primary" />
+                ) : (
+                  <Lock className="w-8 h-8 text-primary" />
+                )}
               </div>
             </div>
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              {requiresTotp ? 'Two-Factor Authentication' : 'Sign In'}
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your vault
+              {requiresTotp 
+                ? 'Enter the 6-digit code from Google Authenticator'
+                : 'Enter your credentials to access your vault'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              {!requiresTotp ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="totpCode">Authenticator Code</Label>
+                  <Input
+                    id="totpCode"
+                    type="text"
+                    placeholder="000000"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    className="text-center text-2xl tracking-widest font-mono"
+                    autoFocus
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setRequiresTotp(false);
+                      setTotpCode('');
+                    }}
+                    className="w-full"
+                  >
+                    ← Back to login
+                  </Button>
+                </div>
+              )}
 
               <Button
                 type="submit"
                 className="w-full gradient-primary shadow-glow hover:shadow-intense"
-                disabled={loading}
+                disabled={loading || (requiresTotp && totpCode.length !== 6)}
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? 'Signing In...' : requiresTotp ? 'Verify Code' : 'Sign In'}
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
-              <Link to="/register" className="text-primary hover:underline">
-                Sign Up
-              </Link>
-            </div>
+            {!requiresTotp && (
+              <div className="mt-6 text-center text-sm">
+                <span className="text-muted-foreground">Don't have an account? </span>
+                <Link to="/register" className="text-primary hover:underline">
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
