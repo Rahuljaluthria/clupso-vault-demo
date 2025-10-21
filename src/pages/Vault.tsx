@@ -44,32 +44,56 @@ const Vault = () => {
 
   const loadVaultData = async () => {
     try {
-      // Load directories
-      const { data: dirData, error: dirError } = await supabase
-        .from('vault_directories')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        toast.error('Please log in again');
+        navigate('/login');
+        return;
+      }
 
-      if (dirError) throw dirError;
+      // Load directories
+      const dirResponse = await fetch('https://clupso-backend.onrender.com/api/vault/directories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!dirResponse.ok) {
+        throw new Error('Failed to load directories');
+      }
+
+      const dirData = await dirResponse.json();
 
       if (dirData && dirData.length > 0) {
-        setDirectories(dirData);
-        setSelectedDirectory(dirData[0].id);
-      } else {
-        // Create sample directories for demo
-        await createSampleDirectories();
+        setDirectories(dirData.map((dir: any) => ({
+          id: dir._id,
+          name: dir.name,
+          icon: dir.icon,
+          created_at: dir.createdAt
+        })));
+        setSelectedDirectory(dirData[0]._id);
       }
 
       // Load credentials
-      const { data: credData, error: credError } = await supabase
-        .from('credentials')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const credResponse = await fetch('https://clupso-backend.onrender.com/api/vault/credentials', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-      if (credError) throw credError;
-
-      if (credData) {
-        setCredentials(credData);
+      if (credResponse.ok) {
+        const credData = await credResponse.json();
+        setCredentials(credData.map((cred: any) => ({
+          id: cred._id,
+          directory_id: cred.directoryId,
+          name: cred.title,
+          username: cred.username,
+          encrypted_password: cred.password,
+          url: cred.url,
+          notes: cred.notes,
+          created_at: cred.createdAt,
+          updated_at: cred.updatedAt || cred.createdAt
+        })));
       }
     } catch (error) {
       console.error('Error loading vault:', error);
