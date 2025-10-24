@@ -123,6 +123,55 @@ const Vault = () => {
     setActivityRefresh(prev => prev + 1);
   };
 
+  const handleDirectoryDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`https://clupso-backend.onrender.com/api/vault/directories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete directory');
+      }
+
+      toast.success('Directory deleted successfully');
+      if (selectedDirectory === id) {
+        setSelectedDirectory(null);
+      }
+      loadVaultData();
+      setActivityRefresh(prev => prev + 1);
+    } catch (error) {
+      toast.error('Failed to delete directory');
+      console.error(error);
+    }
+  };
+
+  const handleCredentialDelete = async (id: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`https://clupso-backend.onrender.com/api/vault/credentials/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete credential');
+      }
+
+      toast.success('Credential deleted successfully');
+      loadVaultData();
+      setActivityRefresh(prev => prev + 1);
+    } catch (error) {
+      toast.error('Failed to delete credential');
+      console.error(error);
+    }
+  };
+
   const filteredCredentials = selectedDirectory
     ? credentials.filter((c) => c.directory_id === selectedDirectory)
     : [];
@@ -185,6 +234,7 @@ const Vault = () => {
                     directory={dir}
                     isSelected={selectedDirectory === dir.id}
                     onClick={() => setSelectedDirectory(dir.id)}
+                    onDelete={handleDirectoryDelete}
                     credentialCount={credentials.filter((c) => c.directory_id === dir.id).length}
                   />
                 ))}
@@ -207,7 +257,12 @@ const Vault = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredCredentials.map((cred) => (
-                    <CredentialCard key={cred.id} credential={cred} onUpdate={loadVaultData} />
+                    <CredentialCard 
+                      key={cred.id} 
+                      credential={cred} 
+                      onUpdate={loadVaultData}
+                      onDelete={handleCredentialDelete}
+                    />
                   ))}
                 </div>
                 {filteredCredentials.length === 0 && (
