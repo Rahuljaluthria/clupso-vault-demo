@@ -18,15 +18,24 @@ interface ActivityEntry {
 const ActivityLog = () => {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
   const { token } = useAuth();
 
   const loadActivities = useCallback(async () => {
-    if (!token) return;
+    // Get token from localStorage as fallback
+    const authToken = token || localStorage.getItem('auth_token');
+    
+    if (!authToken) {
+      setLoading(false);
+      setError('Not authenticated');
+      return;
+    }
 
     try {
+      setError('');
       const response = await fetch(`${API_URL}/vault/activity`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authToken}`
         }
       });
 
@@ -35,9 +44,11 @@ const ActivityLog = () => {
       }
 
       const data = await response.json();
-      setActivities(data);
+      setActivities(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading activities:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load activities');
+      setActivities([]);
     } finally {
       setLoading(false);
     }
@@ -63,11 +74,17 @@ const ActivityLog = () => {
         <h2 className="text-2xl font-semibold">Activity Log</h2>
       </div>
 
-      {activities.length === 0 ? (
+      {error && (
+        <Card className="gradient-card p-8 text-center border-destructive">
+          <p className="text-destructive">{error}</p>
+        </Card>
+      )}
+
+      {!error && activities.length === 0 ? (
         <Card className="gradient-card p-8 text-center">
           <p className="text-muted-foreground">No activity recorded yet</p>
         </Card>
-      ) : (
+      ) : !error && (
         <div className="space-y-3">
           {activities.map((activity, index) => (
             <motion.div
@@ -92,7 +109,7 @@ const ActivityLog = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     <span>
-                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                      {activity.timestamp ? formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true }) : 'Recently'}
                     </span>
                   </div>
                 </div>

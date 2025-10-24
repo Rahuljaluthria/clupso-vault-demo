@@ -25,7 +25,7 @@ const Login = () => {
     try {
       const result = await signIn(email, password, requiresTotp ? totpCode : undefined);
       
-      if (result.requireTotp) {
+      if (result && result.requireTotp) {
         setRequiresTotp(true);
         toast.info('Please enter your Google Authenticator code');
       }

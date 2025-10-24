@@ -7,7 +7,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   signUp: (email: string, password: string, phoneNumber: string) => Promise<void>;
-  signIn: (email: string, password: string, totpCode?: string) => Promise<{ requireTotp: boolean }>;
+  signIn: (email: string, password: string, totpCode?: string) => Promise<{ requireTotp: boolean } | void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   otpVerified: boolean;
