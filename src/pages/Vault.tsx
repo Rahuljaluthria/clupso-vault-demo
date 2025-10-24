@@ -40,6 +40,7 @@ const Vault = () => {
   const [loading, setLoading] = useState(true);
   const [showAddDirectory, setShowAddDirectory] = useState(false);
   const [showAddCredential, setShowAddCredential] = useState(false);
+  const [activityRefresh, setActivityRefresh] = useState(0);
 
   const loadVaultData = async () => {
     try {
@@ -112,107 +113,14 @@ const Vault = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, otpVerified, navigate]);
 
-  const createSampleDirectories = async () => {
-    if (!user) return;
-
-    const sampleDirs = [
-      { name: 'Emails', icon: '📧' },
-      { name: 'Socials', icon: '📱' },
-      { name: 'Bank Accounts', icon: '🏦' },
-    ];
-
-    try {
-      const { data: newDirs, error } = await supabase
-        .from('vault_directories')
-        .insert(
-          sampleDirs.map((dir) => ({
-            user_id: user.id,
-            name: dir.name,
-            icon: dir.icon,
-          }))
-        )
-        .select();
-
-      if (error) throw error;
-
-      if (newDirs && newDirs.length > 0) {
-        setDirectories(newDirs);
-        setSelectedDirectory(newDirs[0].id);
-
-        // Add sample credentials
-        await createSampleCredentials(newDirs);
-
-        // Log activity
-        await supabase.from('activity_log').insert(
-          sampleDirs.map((dir) => ({
-            user_id: user.id,
-            action: 'Directory Created',
-            details: { directory_name: dir.name },
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('Error creating sample directories:', error);
-    }
+  const handleDirectoryAdded = () => {
+    loadVaultData();
+    setActivityRefresh(prev => prev + 1);
   };
 
-  const createSampleCredentials = async (dirs: Directory[]) => {
-    if (!user) return;
-
-    const { encryptPassword } = await import('@/lib/encryption');
-
-    const sampleCreds = [
-      {
-        directory_id: dirs[0].id, // Emails
-        name: 'Gmail',
-        username: 'demo@gmail.com',
-        encrypted_password: encryptPassword('demo123'),
-        url: 'https://gmail.com',
-      },
-      {
-        directory_id: dirs[1].id, // Socials
-        name: 'Instagram',
-        username: '@demo_user',
-        encrypted_password: encryptPassword('insta2024'),
-        url: 'https://instagram.com',
-      },
-      {
-        directory_id: dirs[2].id, // Bank
-        name: 'PayPal',
-        username: 'demo@paypal.com',
-        encrypted_password: encryptPassword('secure456'),
-        url: 'https://paypal.com',
-      },
-    ];
-
-    try {
-      const { data, error } = await supabase
-        .from('credentials')
-        .insert(
-          sampleCreds.map((cred) => ({
-            ...cred,
-            user_id: user.id,
-          }))
-        )
-        .select();
-
-      if (error) throw error;
-
-      if (data) {
-        setCredentials(data);
-
-        // Log activity
-        await supabase.from('activity_log').insert(
-          sampleCreds.map((cred) => ({
-            user_id: user.id,
-            action: 'Credential Added',
-            details: { credential_name: cred.name },
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('Error creating sample credentials:', error);
-    }
+  const handleCredentialAdded = () => {
+    loadVaultData();
+    setActivityRefresh(prev => prev + 1);
   };
 
   const filteredCredentials = selectedDirectory
@@ -312,7 +220,7 @@ const Vault = () => {
           </TabsContent>
 
           <TabsContent value="activity">
-            <ActivityLog />
+            <ActivityLog key={activityRefresh} />
           </TabsContent>
         </Tabs>
       </div>
@@ -320,13 +228,13 @@ const Vault = () => {
       <AddDirectoryDialog
         open={showAddDirectory}
         onOpenChange={setShowAddDirectory}
-        onSuccess={loadVaultData}
+        onSuccess={handleDirectoryAdded}
       />
       <AddCredentialDialog
         open={showAddCredential}
         onOpenChange={setShowAddCredential}
         directoryId={selectedDirectory}
-        onSuccess={loadVaultData}
+        onSuccess={handleCredentialAdded}
       />
     </div>
   );

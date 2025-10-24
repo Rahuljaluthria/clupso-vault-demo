@@ -5,50 +5,43 @@ import { useAuth } from '@/hooks/useAuth';
 import { Activity, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+const API_URL = 'https://clupso-backend.onrender.com/api';
+
 interface ActivityEntry {
-  id: string;
+  _id: string;
+  userId: string;
   action: string;
-  details: {
-    email?: string;
-    directory_name?: string;
-    credential_name?: string;
-    [key: string]: string | number | boolean | undefined;
-  };
-  created_at: string;
+  details: string;
+  timestamp: string;
 }
 
 const ActivityLog = () => {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { token } = useAuth();
 
   const loadActivities = useCallback(async () => {
-    if (!user) return;
+    if (!token) return;
 
     try {
-      // For now, use mock data until backend API is ready
-      const mockActivities = [
-        {
-          id: '1',
-          action: 'User signed in',
-          created_at: new Date().toISOString(),
-          details: { email: user.email }
-        },
-        {
-          id: '2', 
-          action: 'Vault accessed',
-          created_at: new Date(Date.now() - 60000).toISOString(),
-          details: {}
+      const response = await fetch(`${API_URL}/vault/activity`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      ];
-      
-      setActivities(mockActivities);
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch activities');
+      }
+
+      const data = await response.json();
+      setActivities(data);
     } catch (error) {
       console.error('Error loading activities:', error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [token]);
 
   useEffect(() => {
     loadActivities();
@@ -78,7 +71,7 @@ const ActivityLog = () => {
         <div className="space-y-3">
           {activities.map((activity, index) => (
             <motion.div
-              key={activity.id}
+              key={activity._id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -92,15 +85,14 @@ const ActivityLog = () => {
                     </div>
                     {activity.details && (
                       <p className="text-sm text-muted-foreground">
-                        {activity.details.directory_name && `Directory: ${activity.details.directory_name}`}
-                        {activity.details.credential_name && `Credential: ${activity.details.credential_name}`}
+                        {activity.details}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     <span>
-                      {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                     </span>
                   </div>
                 </div>
