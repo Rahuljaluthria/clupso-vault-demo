@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LogOut, Plus, User, Activity, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -17,7 +16,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DirectoryCard from '@/components/vault/DirectoryCard';
 import CredentialCard from '@/components/vault/CredentialCard';
-import ActivityLog from '@/components/vault/ActivityLog';
 import AddDirectoryDialog from '@/components/vault/AddDirectoryDialog';
 import AddCredentialDialog from '@/components/vault/AddCredentialDialog';
 
@@ -49,7 +47,6 @@ const Vault = () => {
   const [loading, setLoading] = useState(true);
   const [showAddDirectory, setShowAddDirectory] = useState(false);
   const [showAddCredential, setShowAddCredential] = useState(false);
-  const [activityRefresh, setActivityRefresh] = useState(0);
 
   const loadVaultData = async () => {
     try {
@@ -124,12 +121,10 @@ const Vault = () => {
 
   const handleDirectoryAdded = () => {
     loadVaultData();
-    setActivityRefresh(prev => prev + 1);
   };
 
   const handleCredentialAdded = () => {
     loadVaultData();
-    setActivityRefresh(prev => prev + 1);
   };
 
   const handleDirectoryDelete = async (id: string) => {
@@ -151,7 +146,6 @@ const Vault = () => {
         setSelectedDirectory(null);
       }
       loadVaultData();
-      setActivityRefresh(prev => prev + 1);
     } catch (error) {
       toast.error('Failed to delete directory');
       console.error(error);
@@ -174,7 +168,6 @@ const Vault = () => {
 
       toast.success('Credential deleted successfully');
       loadVaultData();
-      setActivityRefresh(prev => prev + 1);
     } catch (error) {
       toast.error('Failed to delete credential');
       console.error(error);
@@ -254,30 +247,24 @@ const Vault = () => {
         </motion.div>
 
         {/* Main Content */}
-        <Tabs defaultValue="vault" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="vault">Vault</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="vault" className="space-y-6">
-            {/* Directories */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Directories</h2>
-                <Button
-                  onClick={() => setShowAddDirectory(true)}
-                  size="sm"
-                  className="gradient-primary"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Directory
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {directories.map((dir) => (
-                  <DirectoryCard
-                    key={dir.id}
+        <div className="space-y-6">
+          {/* Directories */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Directories</h2>
+              <Button
+                onClick={() => setShowAddDirectory(true)}
+                size="sm"
+                className="gradient-primary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Directory
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {directories.map((dir) => (
+                <DirectoryCard
+                  key={dir.id}
                     directory={dir}
                     isSelected={selectedDirectory === dir.id}
                     onClick={() => setSelectedDirectory(dir.id)}
@@ -319,12 +306,7 @@ const Vault = () => {
                 )}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="activity">
-            <ActivityLog key={activityRefresh} />
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
 
       <AddDirectoryDialog
