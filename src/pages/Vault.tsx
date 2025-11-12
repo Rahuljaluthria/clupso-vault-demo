@@ -4,8 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut, Plus, User, Activity, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DirectoryCard from '@/components/vault/DirectoryCard';
 import CredentialCard from '@/components/vault/CredentialCard';
 import ActivityLog from '@/components/vault/ActivityLog';
@@ -200,10 +209,48 @@ const Vault = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-glow mb-2">CLUPSO Vault</h1>
             <p className="text-muted-foreground">Secure Password Manager</p>
           </div>
-          <Button variant="outline" onClick={signOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          
+          {/* Profile Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10 border-2 border-primary/20">
+                  <AvatarImage src="" alt={user?.email || 'User'} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">My Account</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => toast.info('Avatar settings coming soon!')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Avatar</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info('Activity view coming soon!')}>
+                <Activity className="mr-2 h-4 w-4" />
+                <span>Activity</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info('Trusted devices coming soon!')}>
+                <Monitor className="mr-2 h-4 w-4" />
+                <span>Trusted Devices</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </motion.div>
 
         {/* Main Content */}
