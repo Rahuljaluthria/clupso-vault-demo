@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Mail, ArrowLeft, Shield } from 'lucide-react';
 import LiquidEther from '@/components/LiquidEther';
 
+const API_URL = 'https://clupso-backend.onrender.com/api';
+
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'email' | 'totp' | 'newPassword'>('email');
@@ -24,7 +26,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/forgot-password/verify-email`, {
+      const response = await fetch(`${API_URL}/auth/forgot-password/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/forgot-password/verify-totp`, {
+      const response = await fetch(`${API_URL}/auth/forgot-password/verify-totp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +99,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/forgot-password/reset`, {
+      const response = await fetch(`${API_URL}/auth/forgot-password/reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
