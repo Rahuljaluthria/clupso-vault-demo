@@ -86,30 +86,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, phoneNumber: string) => {
-    // Get device fingerprint
-    const deviceInfo = await getDeviceFingerprint();
-    
-    const response = await fetch(`${API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        email, 
-        password, 
-        phoneNumber,
-        ...deviceInfo
-      })
-    });
+    try {
+      // Get device fingerprint
+      const deviceInfo = await getDeviceFingerprint();
+      
+      console.log('Device info for signup:', deviceInfo); // Debug log
+      
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          phoneNumber,
+          ...deviceInfo
+        })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create account');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create account');
+      }
+      
+      toast.success('Account created successfully! Please sign in.');
+      navigate('/login');
+    } catch (error) {
+      console.error('SignUp error:', error);
+      throw error;
     }
-    
-    toast.success('Account created successfully! Please sign in.');
-    navigate('/login');
   };
 
   const signIn = async (email: string, password: string, totpCode?: string) => {
