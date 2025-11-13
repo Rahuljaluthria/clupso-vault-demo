@@ -1,6 +1,6 @@
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
-let fpPromise: Promise<any> | null = null;
+let fpPromise: ReturnType<typeof FingerprintJS.load> | null = null;
 
 // Initialize FingerprintJS
 export const initFingerprint = async () => {
