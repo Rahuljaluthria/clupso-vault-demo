@@ -89,20 +89,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Get device fingerprint
     const deviceInfo = await getDeviceFingerprint();
     
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          phone_number: phoneNumber,
-          ...deviceInfo
-        },
+    const response = await fetch(`${API_URL}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
       },
+      body: JSON.stringify({ 
+        email, 
+        password, 
+        phoneNumber,
+        ...deviceInfo
+      })
     });
 
-    if (error) throw new Error(error);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to create account');
+    }
     
-    toast.success('Account created successfully!');
+    toast.success('Account created successfully! Please sign in.');
     navigate('/login');
   };
 
