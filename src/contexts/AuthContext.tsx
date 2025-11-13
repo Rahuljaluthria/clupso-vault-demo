@@ -128,6 +128,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!response.ok) {
       // Check if device requires approval
       if (data.requiresApproval) {
+        // If in development and approval URL is provided, show it
+        if (data.approvalUrl) {
+          toast.error(data.message || 'Device approval required', {
+            duration: 10000,
+            action: {
+              label: 'Open Link',
+              onClick: () => window.open(data.approvalUrl, '_blank')
+            }
+          });
+          throw new Error('Check backend console or click "Open Link" above to approve device');
+        }
         throw new Error(data.message || 'Device approval required. Check your email.');
       }
       throw new Error(data.error || 'Sign in failed');
