@@ -3,6 +3,8 @@ import { User, Session, supabase } from '@/lib/mongodb-client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AuthContext } from './AuthContextTypes';
+import { getDeviceFingerprint } from '@/lib/fingerprint';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 const API_URL = 'https://clupso-backend.onrender.com/api';
 
@@ -13,6 +15,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [otpVerified, setOtpVerified] = useState(false);
   const navigate = useNavigate();
+
+  // Initialize session timeout hook
+  useSessionTimeout(!!token);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -81,12 +86,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, phoneNumber: string) => {
+    // Get device fingerprint
+    const deviceInfo = await getDeviceFingerprint();
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           phone_number: phoneNumber,
+          ...deviceInfo
         },
       },
     });
@@ -98,17 +107,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string, totpCode?: string) => {
+    // Get device fingerprint
+    const deviceInfo = await getDeviceFingerprint();
+    
     const response = await fetch(`${API_URL}/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ email, password, totpCode })
+      body: JSON.stringify({ 
+        email, 
+        password, 
+        totpCode,
+        ...deviceInfo
+      })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
+      // Check if device requires approval
+      if (data.requiresApproval) {
+        throw new Error(data.message || 'Device approval required. Check your email.');
+      }
       throw new Error(data.error || 'Sign in failed');
     }
 

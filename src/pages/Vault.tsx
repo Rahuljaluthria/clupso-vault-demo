@@ -233,7 +233,7 @@ const Vault = () => {
                 <Activity className="mr-2 h-4 w-4" />
                 <span>Activity</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info('Trusted devices coming soon!')}>
+              <DropdownMenuItem onClick={() => navigate('/trusted-devices')}>
                 <Monitor className="mr-2 h-4 w-4" />
                 <span>Trusted Devices</span>
               </DropdownMenuItem>
