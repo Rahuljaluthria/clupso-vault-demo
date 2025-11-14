@@ -141,10 +141,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!response.ok) {
       // Check if device requires approval
       if (data.requiresApproval) {
-        toast.error('New device detected! Go to Render → clupso-backend → Logs to find the approval link.', {
+        toast.error(data.message || 'Device approval required. Please check your email.', {
           duration: 10000
         });
-        throw new Error('Device approval required. Check backend console logs.');
+        throw new Error(data.message || 'Device approval required');
       }
       throw new Error(data.error || 'Sign in failed');
     }
