@@ -164,12 +164,20 @@ const Login = () => {
             </form>
 
             {!requiresTotp && (
-              <div className="mt-6 text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
-                <Link to="/register" className="text-primary hover:underline">
-                  Sign Up
-                </Link>
-              </div>
+              <>
+                <div className="mt-6 text-center text-sm">
+                  <span className="text-muted-foreground">Don't have an account? </span>
+                  <Link to="/register" className="text-primary hover:underline">
+                    Sign Up
+                  </Link>
+                </div>
+                <div className="mt-3 text-center text-sm">
+                  <Link to="/bug-bounty" className="text-primary hover:underline flex items-center justify-center gap-1">
+                    <Shield className="w-4 h-4" />
+                    Bug Bounty Program
+                  </Link>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
