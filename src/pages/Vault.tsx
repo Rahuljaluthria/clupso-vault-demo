@@ -92,9 +92,9 @@ const Vault = () => {
         setCredentials(credData.map((cred: any) => ({
           id: cred._id,
           directory_id: cred.directoryId,
-          name: cred.title,
+          name: cred.name,
           username: cred.username,
-          encrypted_password: cred.password,
+          encrypted_password: cred.encryptedPassword,
           url: cred.url,
           notes: cred.notes,
           created_at: cred.createdAt,
