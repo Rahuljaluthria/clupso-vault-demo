@@ -39,7 +39,7 @@ export interface Credential {
 }
 
 const Vault = () => {
-  const { user, otpVerified, signOut } = useAuth();
+  const { user, otpVerified, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [directories, setDirectories] = useState<Directory[]>([]);
   const [credentials, setCredentials] = useState<Credential[]>([]);
@@ -48,13 +48,23 @@ const Vault = () => {
   const [showAddDirectory, setShowAddDirectory] = useState(false);
   const [showAddCredential, setShowAddCredential] = useState(false);
 
+  // Wait for auth to load before checking user
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [authLoading, user, navigate]);
+
   const loadVaultData = async () => {
+    // Don't load if auth is still loading or user not authenticated
+    if (authLoading || !user) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        toast.error('Please log in again');
-        navigate('/login');
-        return;
+        return; // Auth context will handle redirect
       }
 
       // Load directories
@@ -110,6 +120,11 @@ const Vault = () => {
   };
 
   useEffect(() => {
+    // Wait for auth to complete loading
+    if (authLoading) {
+      return;
+    }
+
     if (!user || !otpVerified) {
       navigate('/login');
       return;
@@ -117,7 +132,7 @@ const Vault = () => {
 
     loadVaultData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, otpVerified, navigate]);
+  }, [user, otpVerified, navigate, authLoading]);
 
   const handleDirectoryAdded = () => {
     loadVaultData();
