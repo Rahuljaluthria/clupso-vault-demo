@@ -259,7 +259,11 @@ clupso-backend/            # Backend
 
 ## 📄 License
 
-This project is open source and available under the MIT License.
+All rights reserved. This project is proprietary and confidential.
+
+**Copyright © 2025 Rahul Jaluthria**
+
+Unauthorized copying, distribution, modification, or use of this software is strictly prohibited without explicit written permission from the author.
 
 ## 👨‍💻 Author
 
