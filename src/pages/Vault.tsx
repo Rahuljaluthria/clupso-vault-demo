@@ -199,7 +199,12 @@ const Vault = () => {
           className="flex justify-between items-center mb-8"
         >
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-glow mb-2">CLUPSO Vault</h1>
+            <h1 
+              className="text-3xl md:text-4xl font-bold text-glow mb-2 cursor-pointer hover:opacity-80 transition-opacity" 
+              onClick={() => window.location.reload()}
+            >
+              CLUPSO Vault
+            </h1>
             <p className="text-muted-foreground">Secure Password Manager</p>
           </div>
           
