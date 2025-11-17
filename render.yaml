@@ -1,3 +1,5 @@
+# CLUPSO Vault - Static Site Configuration
+# This file configures the deployment on Render.com
 services:
   - type: web
     name: clupso-vault-demo
