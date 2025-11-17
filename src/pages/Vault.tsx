@@ -229,7 +229,7 @@ const Vault = () => {
                 <User className="mr-2 h-4 w-4" />
                 <span>Avatar</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info('Activity view coming soon!')}>
+              <DropdownMenuItem onClick={() => navigate('/activity')}>
                 <Activity className="mr-2 h-4 w-4" />
                 <span>Activity</span>
               </DropdownMenuItem>

@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import OTPVerify from "./pages/OTPVerify";
 import TotpSetup from "./pages/TotpSetup";
 import Vault from "./pages/Vault";
+import Activity from "./pages/Activity";
 import TrustedDevices from "./pages/TrustedDevices";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/otp-verify" element={<OTPVerify />} />
             <Route path="/totp-setup" element={<TotpSetup />} />
             <Route path="/vault" element={<Vault />} />
+            <Route path="/activity" element={<Activity />} />
             <Route path="/trusted-devices" element={<TrustedDevices />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
