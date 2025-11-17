@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Shield } from 'lucide-react';
+import { Shield, CheckCircle2, XCircle, Info } from 'lucide-react';
 import LiquidEther from '@/components/LiquidEther';
 
 const Register = () => {
@@ -18,6 +19,71 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
 
+  // Password validation function
+  const validatePassword = (pwd: string, emailVal: string): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    // 1. At least 7 characters
+    if (pwd.length < 7) {
+      errors.push('Password must be at least 7 characters long');
+    }
+    
+    // 2. At least 3 special characters
+    const specialChars = pwd.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g);
+    if (!specialChars || specialChars.length < 3) {
+      errors.push('Password must contain at least 3 special characters (!@#$%^&*()_+-=[]{};\':"|,.<>?)');
+    }
+    
+    // 3. Not related to username (email prefix)
+    const username = emailVal.split('@')[0].toLowerCase();
+    const passwordLower = pwd.toLowerCase();
+    
+    // Check if password contains significant part of username (3+ chars)
+    if (username.length >= 3) {
+      for (let i = 0; i <= username.length - 3; i++) {
+        const substring = username.substring(i, i + 3);
+        if (passwordLower.includes(substring)) {
+          errors.push('Password should not contain parts of your email username');
+          break;
+        }
+      }
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
+  // Get password strength indicators
+  const getPasswordRequirements = () => {
+    const hasMinLength = password.length >= 7;
+    const specialChars = password.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g);
+    const hasSpecialChars = specialChars && specialChars.length >= 3;
+    
+    const username = email.split('@')[0].toLowerCase();
+    const passwordLower = password.toLowerCase();
+    let isRelatedToUsername = false;
+    
+    if (username.length >= 3 && password.length >= 3) {
+      for (let i = 0; i <= username.length - 3; i++) {
+        const substring = username.substring(i, i + 3);
+        if (passwordLower.includes(substring)) {
+          isRelatedToUsername = true;
+          break;
+        }
+      }
+    }
+    
+    return {
+      minLength: hasMinLength,
+      specialChars: hasSpecialChars,
+      notRelatedToUsername: !isRelatedToUsername && password.length > 0
+    };
+  };
+
+  const requirements = getPasswordRequirements();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -26,8 +92,9 @@ const Register = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    const validation = validatePassword(password, email);
+    if (!validation.isValid) {
+      validation.errors.forEach(error => toast.error(error));
       return;
     }
 
@@ -119,7 +186,48 @@ const Register = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                {password && (
+                  <div className="space-y-2 mt-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      {requirements.minLength ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={requirements.minLength ? 'text-green-500' : 'text-muted-foreground'}>
+                        At least 7 characters
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      {requirements.specialChars ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={requirements.specialChars ? 'text-green-500' : 'text-muted-foreground'}>
+                        At least 3 special characters (!@#$%^&*...)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      {requirements.notRelatedToUsername ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className={requirements.notRelatedToUsername ? 'text-green-500' : 'text-muted-foreground'}>
+                        Not related to your email username
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              <Alert className="bg-blue-500/10 border-blue-500/20">
+                <Info className="h-4 w-4 text-blue-500" />
+                <AlertDescription className="text-sm text-muted-foreground ml-2">
+                  <strong className="text-blue-500">Tip:</strong> Consider using words from your regional language (Hindi, Spanish, etc.) for added uniqueness and security!
+                </AlertDescription>
+              </Alert>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
