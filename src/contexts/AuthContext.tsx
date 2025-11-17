@@ -181,12 +181,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setOtpVerified(false);
-    toast.success('Signed out successfully');
-    navigate('/');
+    try {
+      const token = localStorage.getItem('auth_token');
+      const deviceId = await getDeviceFingerprint();
+      const { browser, os } = getDeviceInfo();
+      
+      // Call logout endpoint to log the activity
+      if (token) {
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ deviceId, browser, os })
+        });
+      }
+    } catch (error) {
+      console.error('Logout logging error:', error);
+    } finally {
+      // Always clear local state
+      await supabase.auth.signOut();
+      localStorage.removeItem('auth_token');
+      setUser(null);
+      setSession(null);
+      setOtpVerified(false);
+      toast.success('Signed out successfully');
+      navigate('/');
+    }
   };
 
   return (

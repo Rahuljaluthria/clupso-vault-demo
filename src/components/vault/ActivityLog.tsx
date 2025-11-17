@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Activity, Clock } from 'lucide-react';
+import { Activity, Clock, MapPin, Monitor, Smartphone, CheckCircle, XCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const API_URL = 'https://clupso-backend.onrender.com/api';
@@ -12,6 +13,11 @@ interface ActivityEntry {
   userId: string;
   action: string;
   details: string;
+  ipAddress?: string;
+  browser?: string;
+  os?: string;
+  deviceId?: string;
+  success: boolean;
   timestamp: string;
 }
 
@@ -95,18 +101,50 @@ const ActivityLog = () => {
             >
               <Card className="gradient-card border-border p-4 hover:border-primary/50 transition-all duration-300">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-glow"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      {activity.success ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
                       <h3 className="font-semibold">{activity.action}</h3>
+                      {!activity.success && (
+                        <Badge variant="destructive" className="text-xs">Failed</Badge>
+                      )}
                     </div>
+                    
                     {activity.details && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground pl-6">
                         {activity.details}
                       </p>
                     )}
+                    
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pl-6">
+                      {activity.ipAddress && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>IP: {activity.ipAddress}</span>
+                        </div>
+                      )}
+                      
+                      {activity.browser && (
+                        <div className="flex items-center gap-1">
+                          <Monitor className="w-3 h-3" />
+                          <span>{activity.browser}</span>
+                        </div>
+                      )}
+                      
+                      {activity.os && (
+                        <div className="flex items-center gap-1">
+                          <Smartphone className="w-3 h-3" />
+                          <span>{activity.os}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
                     <Clock className="w-3 h-3" />
                     <span>
                       {activity.timestamp ? formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true }) : 'Recently'}
