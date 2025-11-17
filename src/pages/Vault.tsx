@@ -216,7 +216,10 @@ const Vault = () => {
           <div>
             <h1 
               className="text-3xl md:text-4xl font-bold text-glow mb-2 cursor-pointer hover:opacity-80 transition-opacity" 
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                setLoading(true);
+                loadVaultData().finally(() => setLoading(false));
+              }}
             >
               CLUPSO Vault
             </h1>
