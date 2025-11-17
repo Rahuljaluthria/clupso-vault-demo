@@ -1,282 +1,273 @@
-# CLUPSO Vault - Secure Password Manager
+# CLUPSO Vault - Password Management System
 
-A modern, secure password management application with advanced security features including device fingerprinting, multi-device trust management, and two-factor authentication.
+A secure, full-stack password vault application with end-to-end encryption, 2FA, and device fingerprinting.
 
-## 🔐 Features
+## 🏗️ Monorepo Structure
+
+```
+clupso-vault/
+├── backend/                # Node.js + Express + MongoDB Backend
+│   ├── src/
+│   │   ├── config/        # Database configuration
+│   │   ├── middleware/    # Authentication middleware
+│   │   ├── models/        # MongoDB models (User, Credential, Directory, ActivityLog)
+│   │   ├── routes/        # API routes (auth, vault)
+│   │   ├── scripts/       # Utility scripts
+│   │   └── utils/         # Helper functions (email, activity logger)
+│   ├── package.json
+│   └── tsconfig.json
+├── src/                    # React + TypeScript Frontend
+│   ├── components/        # Reusable UI components
+│   ├── contexts/          # React contexts (Auth)
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # Utilities (encryption, MongoDB client)
+│   ├── pages/             # Application pages
+│   └── main.tsx
+├── public/                # Static assets
+├── package.json           # Root package.json with monorepo scripts
+└── README.md
+```
+
+## ✨ Features
 
 ### Security
-- **AES-256 Encryption** - All passwords encrypted before storage
-- **Two-Factor Authentication (2FA)** - TOTP-based using Google Authenticator
-- **Device Fingerprinting** - Unique identification for each browser/device
-- **Multi-Device Trust** - Manage trusted devices with automatic 5-day expiry
-- **Email-Based Approval** - New device logins require email verification
-- **Session Timeout** - Automatic logout after 7 minutes of inactivity
-- **Activity Logging** - Track all account actions
+- 🔐 **AES-256 Encryption** - Client-side encryption for all credentials
+- 🔑 **2FA with TOTP** - Google Authenticator integration
+- 🖥️ **Device Fingerprinting** - Trusted device management (5-day validity)
+- 📧 **Email Verification** - OTP-based email verification
+- 🔒 **Password Requirements** - Strong password enforcement
+  - Minimum 7 characters
+  - At least 3 special characters
+  - Cannot contain email username
+- 📊 **Activity Logging** - Track all user actions with IP, browser, OS
 
-### User Features
-- Secure credential storage
-- Directory organization
-- Password recovery with TOTP verification
-- Trusted device management
-- Real-time activity monitoring
-- Beautiful, responsive UI
+### Password Management
+- 📁 **Directory Organization** - Organize credentials in folders
+- 🔍 **Search & Filter** - Quick credential lookup
+- 👁️ **Password Visibility Toggle** - View passwords securely
+- 📋 **Copy to Clipboard** - One-click password copying
+- 🎨 **Modern UI** - Beautiful, responsive design with Tailwind CSS
 
-## 🚀 Live Demo
+### Additional Features
+- 🐛 **Bug Bounty Program** - Public security bounty page
+- 📱 **Responsive Design** - Works on all devices
+- 🌊 **Liquid Ether Animation** - Interactive background effects
+- 🔔 **Real-time Notifications** - Toast notifications for actions
 
-- **Frontend**: [https://clupso-vault-demo.onrender.com](https://clupso-vault-demo.onrender.com)
-- **Backend API**: [https://clupso-backend.onrender.com](https://clupso-backend.onrender.com)
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **TailwindCSS** - Styling
-- **shadcn/ui** - Component library
-- **Framer Motion** - Animations
-- **FingerprintJS** - Device identification
-- **React Router v6** - Navigation
-
-### Backend
-- **Node.js + Express** - Server framework
-- **TypeScript** - Type safety
-- **MongoDB + Mongoose** - Database
-- **JWT** - Authentication tokens
-- **bcryptjs** - Password hashing
-- **Speakeasy** - TOTP generation
-- **MailerSend** - Email service
-
-### Deployment
-- **Render.com** - Hosting (Frontend & Backend)
-- **MongoDB Atlas** - Cloud database
-- **GitHub** - Version control & CI/CD
-
-## 📦 Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
-- MongoDB (local or Atlas)
-- MailerSend API key (for emails)
+- Node.js (v18 or higher)
+- MongoDB database
+- npm or yarn
 
-### Frontend Setup
+### Installation
 
-```sh
-# Clone the repository
+1. **Clone the repository**
+```bash
 git clone https://github.com/Rahuljaluthria/clupso-vault-demo.git
 cd clupso-vault-demo
+```
 
-# Install dependencies
+2. **Install all dependencies (frontend + backend)**
+```bash
+npm run install:all
+```
+
+Or install separately:
+```bash
+# Frontend dependencies
 npm install
 
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
+# Backend dependencies
+npm run install:backend
 ```
 
-### Backend Setup
+3. **Configure environment variables**
 
-```sh
-# Clone the backend repository
-git clone https://github.com/Rahuljaluthria/clupso-backend.git
-cd clupso-backend
+Create `backend/.env` file:
+```env
+# MongoDB
+MONGODB_URI=your_mongodb_connection_string
 
-# Install dependencies
-npm install
+# JWT Secret (generate a random string)
+JWT_SECRET=your_jwt_secret_key_here
 
-# Create .env file with required variables (see below)
+# Email Service (MailerSend)
+MAILERSEND_API_KEY=your_mailersend_api_key
+MAILERSEND_SENDER=your_verified_sender_email
 
-# Build the project
-npm run build
-
-# Start development server
-npm run dev
-
-# Or start production server
-npm start
-```
-
-## 🔧 Environment Variables
-
-### Backend (.env)
-```
-MONGODB_URI=mongodb://localhost:27017/clupso
-JWT_SECRET=your_super_secret_jwt_key
-MAILERSEND_API_KEY=mlsn.xxxxxxxxxxxxx
-MAILERSEND_FROM_EMAIL=noreply@yourdomain.com
-BACKEND_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:5173
-NODE_ENV=development
+# Server
 PORT=3000
 ```
 
-### Frontend
-API endpoint is configured in source code as:
-```typescript
-const API_URL = 'https://clupso-backend.onrender.com/api';
+Create `.env` file in root (for frontend):
+```env
+VITE_API_URL=http://localhost:3000
 ```
 
-## 📚 API Documentation
+### Running the Application
+
+**Development Mode - Run both frontend and backend:**
+```bash
+npm run dev:all
+```
+
+**Or run separately:**
+```bash
+# Frontend only (http://localhost:5173)
+npm run dev
+
+# Backend only (http://localhost:3000)
+npm run dev:backend
+```
+
+**Production Build:**
+```bash
+npm run build:all
+```
+
+## 📦 Available Scripts
+
+### Root Level Scripts
+- `npm run dev` - Start frontend development server
+- `npm run dev:backend` - Start backend development server
+- `npm run dev:all` - Start both frontend and backend concurrently
+- `npm run build` - Build frontend for production
+- `npm run build:backend` - Build backend for production
+- `npm run build:all` - Build both frontend and backend
+- `npm run install:backend` - Install backend dependencies
+- `npm run install:all` - Install all dependencies
+- `npm run lint` - Run ESLint on frontend code
+
+### Backend Scripts (from `/backend` directory)
+- `npm run dev` - Start development server with nodemon
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm start` - Run production server
+
+## 🔧 Technology Stack
+
+### Frontend
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Tailwind CSS** - Styling
+- **Shadcn/ui** - UI components
+- **Framer Motion** - Animations
+- **React Router** - Routing
+- **CryptoJS** - Client-side encryption
+- **FingerprintJS** - Device fingerprinting
+
+### Backend
+- **Node.js** - Runtime
+- **Express** - Web framework
+- **TypeScript** - Type safety
+- **MongoDB** - Database
+- **Mongoose** - ODM
+- **JWT** - Authentication
+- **bcryptjs** - Password hashing
+- **Speakeasy** - TOTP generation
+- **MailerSend** - Email service
+- **Nodemon** - Development server
+
+## 🔐 Security Implementation
+
+### Password Encryption Flow
+1. User enters password in frontend
+2. AES-256 encryption using user's master key (derived from login)
+3. Encrypted password stored in MongoDB
+4. Decryption only happens client-side when viewing
+
+### Authentication Flow
+1. User registers with email + password
+2. Email OTP verification sent
+3. User sets up TOTP (Google Authenticator)
+4. Device fingerprint captured and stored
+5. JWT token issued (7-minute expiry)
+6. Trusted devices valid for 5 days
+
+### Activity Logging
+All user actions tracked with:
+- IP Address (from x-forwarded-for or x-real-ip headers)
+- Browser information
+- Operating System
+- Device ID
+- Success/failure status
+- Timestamp
+
+## 🌐 Deployment
+
+### Frontend (Render/Vercel/Netlify)
+1. Build command: `npm run build`
+2. Publish directory: `dist`
+3. Set environment variables in platform dashboard
+
+### Backend (Render/Railway/Heroku)
+1. Root directory: `backend`
+2. Build command: `npm run build`
+3. Start command: `npm start`
+4. Set environment variables in platform dashboard
+
+### Monorepo Deployment
+You can deploy as separate services or use the monorepo structure with different build configurations.
+
+## 📝 API Documentation
 
 ### Authentication Endpoints
+- `POST /api/auth/signup` - Register new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
+- `POST /api/auth/verify-email` - Verify email with OTP
+- `POST /api/auth/setup-totp` - Setup 2FA
+- `POST /api/auth/verify-totp` - Verify TOTP code
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password with OTP
+- `POST /api/auth/approve-device` - Approve trusted device
+- `DELETE /api/auth/revoke-device/:deviceId` - Revoke device
+- `GET /api/auth/trusted-devices` - Get user's trusted devices
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Create new account |
-| POST | `/api/auth/signin` | Login with device check |
-| GET | `/api/auth/user` | Get current user |
-| POST | `/api/auth/setup-totp` | Enable 2FA |
-| POST | `/api/auth/verify-totp` | Verify 2FA setup |
+### Vault Endpoints
+- `GET /api/vault/directories` - Get all directories
+- `POST /api/vault/directories` - Create directory
+- `PUT /api/vault/directories/:id` - Update directory
+- `DELETE /api/vault/directories/:id` - Delete directory
+- `GET /api/vault/credentials` - Get all credentials
+- `POST /api/vault/credentials` - Create credential
+- `PUT /api/vault/credentials/:id` - Update credential
+- `DELETE /api/vault/credentials/:id` - Delete credential
+- `GET /api/vault/activity-log` - Get activity log
 
-### Password Recovery
+## 🐛 Bug Bounty Program
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/forgot-password/verify-email` | Send reset code |
-| POST | `/api/auth/forgot-password/verify-totp` | Verify TOTP |
-| POST | `/api/auth/forgot-password/reset` | Reset password |
+We value security! Visit `/bug-bounty` to see our active security bounties.
 
-### Device Management
+**Scope:**
+- Authentication & Authorization
+- Encryption & Cryptography
+- API Security
+- Session Management
+- Device Fingerprinting
+- XSS, CSRF, SQL Injection
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/auth/approve-device` | Approve device (email link) |
-| GET | `/api/auth/trusted-devices` | List trusted devices |
-| DELETE | `/api/auth/trusted-devices/:id` | Revoke device |
-
-### Vault Operations
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/vault/credentials` | Add credential |
-| GET | `/api/vault/credentials` | List credentials |
-| PUT | `/api/vault/credentials/:id` | Update credential |
-| DELETE | `/api/vault/credentials/:id` | Delete credential |
-| POST | `/api/vault/directories` | Create directory |
-| GET | `/api/vault/directories` | List directories |
-
-## 🔒 Security Features Explained
-
-### Device Fingerprinting
-Each browser/device combination gets a unique fingerprint based on:
-- Browser type and version
-- Operating system
-- Screen resolution, timezone, language
-- Hardware specifications
-- Canvas and WebGL fingerprinting
-
-### Trust Management
-- **First Device**: Automatically trusted on signup
-- **New Devices**: Require email approval
-- **Trust Duration**: 5 days per device
-- **Auto-Expiry**: Devices automatically untrusted after expiration
-
-### Email Approval Flow
-1. User attempts login from new device
-2. System sends approval email with secure link
-3. User clicks link within 10 minutes
-4. Device added to trusted list for 5 days
-5. User can now login without re-approval
-
-### Session Security
-- JWT tokens expire after 7 minutes
-- Activity tracking monitors user interaction
-- Automatic logout on inactivity
-- Secure token storage
-
-## 🎨 Project Structure
-
-```
-clupso-vault-demo/          # Frontend
-├── src/
-│   ├── components/         # UI components
-│   ├── contexts/          # React contexts (Auth, etc.)
-│   ├── hooks/             # Custom hooks
-│   ├── lib/               # Utilities (encryption, fingerprint)
-│   ├── pages/             # Page components
-│   └── integrations/      # Third-party integrations
-├── public/                # Static assets
-└── package.json
-
-clupso-backend/            # Backend
-├── src/
-│   ├── models/           # Database models
-│   ├── routes/           # API routes
-│   ├── middleware/       # Auth middleware
-│   ├── utils/            # Utilities (email service)
-│   └── config/           # Configuration
-└── package.json
-```
-
-## 📝 Database Schema
-
-### User Model
-```typescript
-{
-  email: String (unique),
-  password: String (hashed),
-  phoneNumber: String,
-  totpSecret: String,
-  totpEnabled: Boolean,
-  trustedDevices: [{
-    deviceId: String,
-    browser: String,
-    os: String,
-    addedAt: Date,
-    trustedUntil: Date
-  }],
-  pendingDevice: {
-    deviceId: String,
-    token: String,
-    browser: String,
-    os: String,
-    expiresAt: Date
-  },
-  resetPasswordToken: String,
-  resetPasswordExpires: Date
-}
-```
-
-### Activity Log Model
-```typescript
-{
-  userId: ObjectId,
-  action: String,
-  details: String,
-  timestamp: Date
-}
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+**Rewards:** $1,000 - $20,000 per valid vulnerability
 
 ## 📄 License
 
-All rights reserved. This project is proprietary and confidential.
+This project is private and proprietary.
 
-**Copyright © 2025 Rahul Jaluthria**
-
-Unauthorized copying, distribution, modification, or use of this software is strictly prohibited without explicit written permission from the author.
-
-## 👨‍💻 Author
+## 👤 Author
 
 **Rahul Jaluthria**
 - GitHub: [@Rahuljaluthria](https://github.com/Rahuljaluthria)
 
-## 🙏 Acknowledgments
+## 🤝 Contributing
 
-- FingerprintJS for device identification
-- MailerSend for email service
-- shadcn/ui for beautiful components
-- Render.com for free hosting
+This is a private project. Contributions are not accepted at this time.
+
+## 📞 Support
+
+For security issues, contact: security@clupso.com
 
 ---
 
-**Note**: This is a portfolio/learning project. For production use, ensure proper security audits and compliance with data protection regulations.
+Built with ❤️ using React, Node.js, and MongoDB

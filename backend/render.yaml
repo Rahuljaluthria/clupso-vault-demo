@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: clupso-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://clupso-backend.onrender.com
+      - key: FRONTEND_URL
+        value: https://clupso-vault-demo.onrender.com
+      - key: MAILERSEND_API_KEY
+        sync: false
+      - key: MAILERSEND_FROM_EMAIL
+        sync: false
