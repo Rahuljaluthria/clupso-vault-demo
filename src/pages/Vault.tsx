@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { LogOut, Plus, User, Activity, Monitor } from 'lucide-react';
+import { LogOut, Plus, User, Activity, Monitor, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -236,6 +236,10 @@ const Vault = () => {
               <DropdownMenuItem onClick={() => navigate('/trusted-devices')}>
                 <Monitor className="mr-2 h-4 w-4" />
                 <span>Trusted Devices</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/subscription')}>
+                <Crown className="mr-2 h-4 w-4" />
+                <span>Subscription</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600">

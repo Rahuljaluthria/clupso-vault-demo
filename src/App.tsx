@@ -14,6 +14,7 @@ import Vault from "./pages/Vault";
 import Activity from "./pages/Activity";
 import TrustedDevices from "./pages/TrustedDevices";
 import BugBounty from "./pages/BugBounty";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/vault" element={<Vault />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/trusted-devices" element={<TrustedDevices />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="/bug-bounty" element={<BugBounty />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
